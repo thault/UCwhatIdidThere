@@ -30,6 +30,7 @@ public class ScreenSlidePagerAdapter extends ArrayAdapter<Stamp> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
         ViewHolder holder;
+        return null;
 
     }
 
