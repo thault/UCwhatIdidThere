@@ -1,14 +1,13 @@
 package com.revuc.speedacm.ucwhatididthere.adapters;
 
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.content.Context;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.support.v13.app.FragmentStatePagerAdapter;
 
+import com.revuc.speedacm.ucwhatididthere.util.ScreenSlidePagerFragment;
 import com.revuc.speedacm.ucwhatididthere.util.Stamp;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -16,29 +15,30 @@ import java.util.List;
  * Created by samnwosu on 10/8/16.
  */
 
-public class ScreenSlidePagerAdapter extends ArrayAdapter<Stamp> {
+public class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
-    protected Context mContext;
     protected List<Stamp> mStamps;
 
-    public ScreenSlidePagerAdapter(Context context, List<Stamp> stamps){
-        super(context, android.R.layout.activity_list_item,stamps);
-        mContext = context;
-        mStamps = stamps;
+    public ScreenSlidePagerAdapter(FragmentManager fragmentManager) {
+        super(fragmentManager);
+        mStamps = new ArrayList<Stamp>();
+        Stamp testStamp = new Stamp("test","http://i.imgur.com/OgZD9Ax.png","","","");
+        mStamps.add(testStamp);
+        mStamps.add(testStamp);
+    }
+
+
+    @Override
+    public Fragment getItem(int position) {
+        return ScreenSlidePagerFragment.create(position);
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent){
-        ViewHolder holder;
-        return null;
-
+    public int getCount() {
+        return mStamps.size();
     }
 
-    private static class ViewHolder {
-        ImageView userImageView;
-        ImageView checkImageView;
-        TextView nameLabel;
-    }
+
 
 }
 

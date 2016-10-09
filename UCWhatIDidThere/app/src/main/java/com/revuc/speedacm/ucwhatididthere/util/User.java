@@ -36,8 +36,6 @@ public class User {
     }
 
 
-
-
     public User(String UUID, String email, List<Stamp> stamps) {
         mUUID = UUID;
         mEmail = email;
