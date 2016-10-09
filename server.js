@@ -94,38 +94,6 @@ apiRouter.post('/authenticate', function(req, res) {
     });
 });
 
-// route to authenticate a stamp (POST http://localhost:8080/api/scan)
-apiRouter.post('/scan', function(req, res) {
-
-    // find the stamp
-    Stamp.findOne({
-        _id: req.body._id
-    }).select('_id name url gps description').exec(function(err, stamp) {
-
-        if (err) throw err;
-
-        // no user with that username was found
-        if (!stamp) {
-            res.json({
-                success: false,
-                message: 'Authentication failed. Stamp not found.'
-            });
-        } else if (stamp) {
-
-            // respond with data
-            res.json({
-                name: stamp.name,
-                url: stamp.url,
-                gps: stamp.gps,
-                description: stamp.description
-            });
-
-        }
-
-    });
-});
-
-
 // on routes that end in /users
 // ----------------------------------------------------
 apiRouter.route('/users')
