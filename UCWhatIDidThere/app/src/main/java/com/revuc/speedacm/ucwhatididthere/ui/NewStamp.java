@@ -3,6 +3,7 @@ package com.revuc.speedacm.ucwhatididthere.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -18,6 +19,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import jp.wasabeef.picasso.transformations.gpu.SketchFilterTransformation;
 import okhttp3.Call;
@@ -41,13 +46,13 @@ public class NewStamp extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_stamp);
 
-        mTitle = (TextView) findViewById(R.id.textView4);
-        //mDescription = (TextView) findViewById(R.id.textView5);
-        mStamp = (ImageView)findViewById(R.id.imageView2);
+        mTitle = (TextView) findViewById(R.id.title);
+        mDescription = (TextView) findViewById(R.id.count);
+        mStamp = (ImageView)findViewById(R.id.thumbnail);
 
         Intent intent = getIntent();
         String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
-        String url = "http://192.168.43.219:8080/api/stamps/57f9badce7401e0680ea44ab";
+        String url = "http://52.32.85.146:8080/api/stamps/"+message;
         if(isNetworkAvailable()) {
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder()
@@ -109,14 +114,43 @@ public class NewStamp extends Activity {
             try {
                 String title = mStampData.getString("name");
                 String description = mStampData.getString("description");
+                String url = mStampData.getString("url");
+                String uuid = mStampData.getString("_id");
                 mTitle.setText(title);
                 mDescription.setText(description);
                 Picasso.with(this)
-                        .load("http://i.imgur.com/DvpvklR.png")
+                        .load(url)
                         .fit()
                         .transform(new SketchFilterTransformation(this))
                         .placeholder(R.drawable.progress_animation)
                         .into(mStamp);
+
+                SharedPreferences sharedpreferences = getSharedPreferences(MainActivity.MyPREFERENCES, Context.MODE_PRIVATE);
+
+                SharedPreferences.Editor editor = sharedpreferences.edit();
+
+                Set<String> set = sharedpreferences.getStringSet("stamps", new HashSet<String>());
+
+                //set.add(uuid);
+                //editor.putStringSet("stamps", set);
+                //editor.apply();
+                ArrayList test = new ArrayList<String>(set);
+                test.add(uuid);
+                set.addAll(test);
+                editor.putStringSet("stamps", set);
+                editor.apply();
+                for(int i = 0; i < set.size(); i++){
+                    Log.d(TAG,test.get(i).toString());
+                }
+
+                Map<String,?> keys = sharedpreferences.getAll();
+
+                for(Map.Entry<String,?> entry : keys.entrySet()){
+                    Log.d("map values",entry.getKey() + ": " +
+                            entry.getValue().toString());
+                }
+
+
             } catch (JSONException e) {
                 logException(e);
             }

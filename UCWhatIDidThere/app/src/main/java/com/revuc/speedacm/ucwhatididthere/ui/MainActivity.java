@@ -1,6 +1,10 @@
 package com.revuc.speedacm.ucwhatididthere.ui;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -17,10 +21,24 @@ import android.widget.Toast;
 
 import com.revuc.speedacm.ucwhatididthere.R;
 import com.revuc.speedacm.ucwhatididthere.adapters.ScreenSlidePagerAdapter;
+import com.revuc.speedacm.ucwhatididthere.util.User;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 public class MainActivity extends FragmentActivity {
@@ -28,6 +46,7 @@ public class MainActivity extends FragmentActivity {
     public static final String Name = "nameKey";
     public static final String Email = "emailKey";
     public static final String Stamps = "stampsKey";
+    SharedPreferences sharedpreferences;
 
     public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
 
@@ -38,15 +57,74 @@ public class MainActivity extends FragmentActivity {
     private TextView mTextView;
     private PagerAdapter mAdapter;
     private NfcAdapter mNfcAdapter;
+    protected JSONObject mUserData;
+    private User mUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        if(!sharedpreferences.contains("UserId")){
+            Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
+            startActivity(intent);
+        }
+
+        //grab user info
+        String url = "http://52.32.85.146:8080/api/users/" + sharedpreferences.getString("UserId","");
+        if(isNetworkAvailable()) {
+            OkHttpClient client = new OkHttpClient();
+
+
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+            Call call = client.newCall(request);
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                        }
+                    });
+                    logException(e);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    try {
+                        Log.v(TAG, "We got a response!");
+                        if (response.isSuccessful()) {
+                            String jsonData = response.body().string();
+                            mUserData = new JSONObject(jsonData);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    handleUserData();
+                                }
+                            });
+                        } else {
+                            Log.i(TAG, "Error Code:"+response.code() );
+                        }
+                    } catch (Exception e) {
+                        logException(e);
+
+                    }
+
+                }
+            });
+        }else{
+            Toast.makeText(getApplication(), "NETWORK Unavlaiabel", Toast.LENGTH_LONG).show();
+        }
+
+
 
         mPager = (ViewPager) findViewById(R.id.pager);
-        mAdapter = new ScreenSlidePagerAdapter( getFragmentManager());
+        mAdapter = new ScreenSlidePagerAdapter( getFragmentManager(),getApplicationContext());
         mPager.setAdapter(mAdapter);
         mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
@@ -69,6 +147,54 @@ public class MainActivity extends FragmentActivity {
 
     }
 
+    private void logException(Exception e) {
+        Log.e(TAG, "Exception Caught!", e);
+    }
+
+
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+        boolean isAvailable = false;
+        if(networkInfo != null && networkInfo.isConnected()){
+            isAvailable = true;
+        }
+        return isAvailable;
+    }
+
+    private void handleUserData() {
+        if(mUserData == null){
+            Log.d("pop", "Error");
+        }else{
+            try {
+                Log.d(TAG,mUserData.toString());
+                String id = mUserData.getString("_id");
+                String email = mUserData.getString("email");
+                ArrayList<String> stamps = new ArrayList<String>();
+                JSONArray array = mUserData.getJSONArray("stamps");
+                if (array != null) {
+                    int len = array.length();
+                    for (int i=0;i<len;i++){
+                        stamps.add(array.get(i).toString());
+                    }
+                }
+
+                SharedPreferences.Editor editor = sharedpreferences.edit();
+                editor.putString("email", email);
+                Set<String> set = sharedpreferences.getStringSet("stamps", new HashSet<String>());
+                set.addAll(stamps);
+                editor.putStringSet("stamps", set);
+                editor.apply();
+
+            } catch (JSONException e) {
+                logException(e);
+            }
+
+
+        }
+    }
+
 
     @Override
     protected void onResume() {
@@ -79,6 +205,7 @@ public class MainActivity extends FragmentActivity {
          * an IllegalStateException is thrown.
          */
         Log.d(TAG,"I got here");
+        handleUserData();
         handleIntent(getIntent());
 
     }
@@ -200,9 +327,12 @@ public class MainActivity extends FragmentActivity {
                 Intent intent = new Intent(getApplicationContext(),NewStamp.class);
                 intent.putExtra(EXTRA_MESSAGE, result);
                 startActivity(intent);
+                finish();
                // mTextView.setText("Read content: " + result);
             }
         }
+
+
     }
 
 
