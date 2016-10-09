@@ -27,6 +27,7 @@ app.use(function(req, res, next) {
 // log all requests to the console
 app.use(morgan('dev'));
 
+mongoose.Promise = global.Promise;
 // connect to our database (hosted on modulus.io)
 mongoose.connect('mongodb://localhost:27017/mydb');
 
@@ -53,6 +54,44 @@ apiRouter.use(function(req, res, next) {
 // accessed at GET http://localhost:8080/api
 apiRouter.get('/', function(req, res) {
     res.json({ message: 'hooray! welcome to our api!' });
+});
+
+// route to authenticate a user (POST http://localhost:8080/api/authenticate)
+apiRouter.post('/authenticate', function(req, res) {
+
+    // find the user
+    User.findOne({
+        email: req.body.email
+    }).select('name email password').exec(function(err, user) {
+
+        if (err) throw err;
+
+        // no user with that username was found
+        if (!user) {
+            res.json({
+                success: false,
+                message: 'Authentication failed. User not found.'
+            });
+        } else if (user) {
+
+            // check if password matches
+            var validPassword = user.comparePassword(req.body.password);
+            if (!validPassword) {
+                res.json({
+                    success: false,
+                    message: 'Authentication failed. Wrong password.'
+                });
+            } else {
+                // return the information including token as JSON
+                res.json({
+                    uuid: user._id,
+                    stamps: user.stamps
+                });
+            }
+
+        }
+
+    });
 });
 
 // on routes that end in /users
@@ -100,7 +139,8 @@ apiRouter.route('/stamps')
     .post(function(req, res) {
 
         var stamp = new Stamp();		// create a new instance of the Stamp model
-        stamp.url = req.body.url;  // set the stamp name (comes from the request)
+        stamp.name = req.body.name;  // set the stamp name (comes from the request)
+        stamp.url = req.body.url;  // set the stamp url (comes from the request)
         stamp.gps = req.body.gps;  // set the stamp email (comes from the request)
         stamp.description = req.body.description;  // set the stamp password (comes from the request)
 
@@ -169,6 +209,7 @@ apiRouter.route('/stamps/:stamp_id')
     */
 
 
+
     // delete the stamp with this id
     .delete(function(req, res) {
         Stamp.remove({
@@ -214,6 +255,45 @@ apiRouter.route('/users/:user_id')
                 // return a message
                 res.json({ message: 'User updated!' });
             });
+
+        });
+    })
+
+    .post(function(req, res) {
+
+        // find the stamp
+        Stamp.findOne({
+            _id: req.body._id
+        }).select('_id name url gps description').exec(function(err, stamp) {
+
+         if (err) throw err;
+
+            // no user with that username was found
+            if (!stamp) {
+                res.json({
+                    success: false,
+                    message: 'Authentication failed. Stamp not found.'
+                });
+            } else if (stamp) {
+
+                User.findById(req.params.user_id, function(err, user){
+
+                   // if(err) return res.send.(err);
+                    console.log(user);
+                    user.stamps.push(stamp._id);
+                    user.save();
+                    console.log(user.stamps);
+                });
+                // respond with data
+                res.json({
+                    name: stamp.name,
+                    url: stamp.url,
+                    gps: stamp.gps,
+                    description: stamp.description
+
+                });
+
+            }
 
         });
     })
