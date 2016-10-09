@@ -9,6 +9,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".ui.MainActivity">
+            <uses-permission android:name="android.permission.NFC" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
