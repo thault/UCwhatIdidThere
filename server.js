@@ -92,6 +92,96 @@ apiRouter.route('/users')
         });
     });
 
+// on routes that end in /stamps
+// ----------------------------------------------------
+apiRouter.route('/stamps')
+
+// create a stamp (accessed at POST http://localhost:8080/stamps)
+    .post(function(req, res) {
+
+        var stamp = new Stamp();		// create a new instance of the Stamp model
+        stamp.url = req.body.url;  // set the stamp name (comes from the request)
+        stamp.gps = req.body.gps;  // set the stamp email (comes from the request)
+        stamp.description = req.body.description;  // set the stamp password (comes from the request)
+
+        stamp.save(function(err) {
+            if (err) {
+                // duplicate entry
+                if (err.code != 11000)
+                    return res.json({ success: false, message: 'That stamp already exists. '});
+                else
+                    return res.send(err);
+            }
+
+            // return a message
+            res.json({ message: 'Stamp created!' });
+        });
+
+    })
+
+    // get all the stamps (accessed at GET http://localhost:8080/api/stamps)
+    .get(function(req, res) {
+        Stamp.find(function(err, stamps) {
+            if (err) return res.send(err);
+
+            // return the stamps
+            res.json(stamps);
+        });
+    });
+
+// on routes that end in /users/:user_id
+// ----------------------------------------------------
+apiRouter.route('/stamps/:stamp_id')
+
+// get the stamp with that id
+    .get(function(req, res) {
+        Stamp.findById(req.params.stamp_id, function(err, stamp) {
+            if (err) return res.send(err);
+
+            // return that stamp
+            res.json(stamp);
+        });
+    })
+
+    //may come back to get this working
+    /*
+    // update the user with this id
+    .put(function(req, res) {
+        User.findById(req.params.user_id, function(err, user) {
+
+            if (err) return res.send(err);
+
+            // set the new user information if it exists in the request
+            if (req.body.name) user.name = req.body.name;
+            if (req.body.email) user.email = req.body.email;
+            if (req.body.password) user.password = req.body.password;
+
+            // save the user
+            user.save(function(err) {
+                if (err) return res.send(err);
+
+                // return a message
+                res.json({ message: 'User updated!' });
+            });
+
+        });
+    })
+    */
+
+
+    // delete the stamp with this id
+    .delete(function(req, res) {
+        Stamp.remove({
+            _id: req.params.stamp_id
+        }, function(err, stamp) {
+            if (err) return res.send(err);
+
+            res.json({ message: 'Successfully deleted' });
+        });
+    });
+
+
+
 // on routes that end in /users/:user_id
 // ----------------------------------------------------
 apiRouter.route('/users/:user_id')

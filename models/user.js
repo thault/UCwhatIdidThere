@@ -6,9 +6,9 @@ var StampScheme = require('./stamp');
 // user schema
 var UserSchema   = new Schema({
     name: String,
-    email: { type: String, required: true },
+    email: { type: String, required: true, index: { unique: true }},
     password: { type: String, required: true, select: false },
-    stamps: [StampScheme]
+    stamps: [String]
 });
 
 // hash the password before the user is saved
