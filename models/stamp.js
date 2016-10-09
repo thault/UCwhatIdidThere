@@ -10,3 +10,5 @@ var StampScheme = new Schema(
         description: String
     });
 
+
+module.exports = mongoose.model('Stamp', StampScheme);
