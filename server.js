@@ -108,7 +108,7 @@ apiRouter.post('/scan', function(req, res) {
         if (!stamp) {
             res.json({
                 success: false,
-                message: 'Authentication failed. User not found.'
+                message: 'Authentication failed. Stamp not found.'
             });
         } else if (stamp) {
 
@@ -287,6 +287,45 @@ apiRouter.route('/users/:user_id')
                 // return a message
                 res.json({ message: 'User updated!' });
             });
+
+        });
+    })
+
+    .post(function(req, res) {
+
+        // find the stamp
+        Stamp.findOne({
+            _id: req.body._id
+        }).select('_id name url gps description').exec(function(err, stamp) {
+
+         if (err) throw err;
+
+            // no user with that username was found
+            if (!stamp) {
+                res.json({
+                    success: false,
+                    message: 'Authentication failed. Stamp not found.'
+                });
+            } else if (stamp) {
+
+                User.findById(req.params.user_id, function(err, user){
+
+                   // if(err) return res.send.(err);
+                    console.log(user);
+                    user.stamps.push(stamp._id);
+                    user.save();
+                    console.log(user.stamps);
+                });
+                // respond with data
+                res.json({
+                    name: stamp.name,
+                    url: stamp.url,
+                    gps: stamp.gps,
+                    description: stamp.description
+
+                });
+
+            }
 
         });
     })
