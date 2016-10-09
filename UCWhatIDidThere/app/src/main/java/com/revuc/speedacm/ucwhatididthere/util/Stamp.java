@@ -9,6 +9,15 @@ public class Stamp {
     private String mUrl;
     private String mGps;
     private String mDiscription;
+    private String mName;
+
+    public String getName() {
+        return mName;
+    }
+
+    public void setName(String name){
+        mName = name;
+    }
 
     public String getUrl() {
         return mUrl;
@@ -44,7 +53,8 @@ public class Stamp {
 
     private String mUUID;
 
-    public Stamp(String url, String gps, String discription, String UUID){
+    public Stamp(String name,String url, String gps, String discription, String UUID){
+        mName = name;
         mUrl = url;
         mGps = gps;
         mDiscription = discription;

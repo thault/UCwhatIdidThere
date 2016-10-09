@@ -1,0 +1,59 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="@style/AuthBackground"
+                tools:context=".ui.LoginActivity">
+
+    <ImageView
+        android:id="@+id/background_image"
+        style="@style/AuthBackgroundImage"/>
+    <TextView
+        android:id="@+id/subTitle"
+        style="@style/AuthSubTitle"/>
+
+    <TextView
+        android:id="@+id/title"
+        style="@style/AuthTitle"/>
+    <LinearLayout
+        android:id="@+id/edittextlayout"
+        style="@style/AuthFieldContainer">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="@color/light_gray"
+            android:id="@+id/userNameField"
+            android:hint="Username"
+            android:ems="10"
+            android:textSize="17sp"
+            />
+        <requestFocus/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="@color/light_gray"
+            android:inputType="textPassword"
+            android:textSize="17sp"
+            android:ems="10"
+            android:id="@+id/passwordField"
+            android:hint="password"
+            />
+
+    </LinearLayout>
+
+
+
+    <Button
+        android:text="Sign IN"
+        android:id="@+id/loginButton"
+        android:layout_below="@id/edittextlayout"
+        style="@style/AuthButton"/>
+
+
+
+
+
+
+</RelativeLayout>
